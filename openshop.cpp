@@ -1,6 +1,8 @@
 #include <iostream>
 // (file)stream for input and output from and to files
 #include <fstream>
+// for min
+#include <algorithm>
 
 using namespace std;
 
@@ -47,7 +49,7 @@ struct Input {
     // void output(void);
     void decend_qsort(int[][4], int, int, int);
     void ascend_qsort(int[][4], int, int, int);
-    void LPT(int);
+    void LPT(void );
     void johnsons(void);
 };
 
@@ -173,9 +175,33 @@ void Input::ascend_qsort(int arr[][4], int s, int e, int c) {
 }
 
 // LPT with number of machines as input
-void Input::LPT(int m) {
+void Input::LPT() {
     // sort by column 1
     decend_qsort(array, 0, n-1, 1);
+
+    // start m machines
+    int machine[m] = {};
+    // save start time a
+    int start[n][2];
+    int index = 0;
+    while (index < n) {
+        // find index of minimum element
+        int* d = min_element(machine,machine+m); //
+       	int ind = d-machine; //
+
+       	start[array[index][0]-1][0] = ind+1;
+       	start[array[index][0]-1][1] = machine[ind];
+
+       	machine[ind] += array[index][1];
+
+       	index++;
+
+    }
+    cout << "LPT machines" << endl;
+
+    for (int i = 0; i< n; i++)
+    	cout << i << ": " << start[i][0] << "  " << start[i][1] << endl;
+
 }
 
 // johnsons algorithm
@@ -215,13 +241,12 @@ int main() {
 
     Input a;
 
-    // number of machines 2
-    a.LPT(2);
+    a.LPT();
 
     cout << "LPT" << endl;
 
     // LPT
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < a.n; i++)
         cout << i << ": " << a.array[i][0] << "   " << a.array[i][1] << endl;
 
     a.johnsons();
@@ -229,7 +254,7 @@ int main() {
     cout << "johnsons" << endl;
 
     // johnsons
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < a.n; i++)
         cout << i << ": " << a.array[i][0] << "   " << a.array[i][2] << " " << a.array[i][3] << endl;
 
     return 0;
