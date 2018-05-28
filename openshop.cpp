@@ -1,9 +1,6 @@
 #include <iostream>
 // (file)stream for input and output from and to files
 #include <fstream>
-// for quicksort
-#include <algorithm>
-#include <utility>
 
 using namespace std;
 
@@ -41,170 +38,199 @@ where M is the makespan
 */
 
 struct Input {
-	int m, n;
-	int** input_array;
-	int** output_array;
-	Input();
-	void print_input(void) {
-		// for (int x = 0; x < n; x++)
-		// 	for (int y = 0; y < 4; y++)
-		// 		cout << "[" << x << "][" << y << "] is: " << input_array[x][y] << endl;
-		for (int x = 0; x < n; x++) {
-			cout << x << ": " << input_array[x][0] << "  " << input_array[x][1] << " " << input_array[x][2] << " " << input_array[x][3] << endl;
-		}
-	}
-	int** modified_qsort(int**, int, int);
-	int** _2qsort(int**, int, int);
-	void LPT(void);
-	void johnsons(void);
+    // int n = 10;
+    // int array[10][4] = { {1, 1, 2, 3}, {2, 9, 31, 14}, {3, 35, 23, 12}, {4, 21, 34, 11}, {5, 6, 8, 15}, {6, 4, 7, 6}, {7, 12, 29, 10}, {8, 13, 17, 25}, {9, 22, 20, 30}, {10, 16, 19, 18} };
+    int n,m;
+    int array[][4];
 
-	void output(void);
+    Input();
+    // void output(void);
+    void decend_qsort(int[][4], int, int, int);
+    void ascend_qsort(int[][4], int, int, int);
+    void LPT(int);
+    void johnsons(void);
 };
 
 // default constructor for Input class
 Input::Input() {
-	// reading the input file
-	ifstream in_file("input.txt");
+    // reading the input file
+    ifstream in_file("input.txt");
 
-	if (in_file.is_open()) {
-		// first line contains m and n as inputs
-		in_file >> m >> n;
+    if (in_file.is_open()) {
+        // first line contains m and n as inputs
+        in_file >> m >> n;
 
-		// creating the dimensions of the 2D array
-		input_array = new int*[n];
-		for (int i = 0; i < n; i++) {
-			input_array[i] = new int[4];
-		}
+        // creating the dimensions of the 2D array
+        // array = new int*[n];
+        // for (int i = 0; i < n; i++) {
+        //  array[i] = new int[4];
+        // }
 
-		int line_count = 0;
-		int a,b,c;
-		while (in_file >> a >> b >> c) {
-			input_array[line_count][0] = line_count+1;
-			input_array[line_count][1] = a;
-			input_array[line_count][2] = b;
-			input_array[line_count][3] = c;
+        cout << n << endl;
+        array[n][4];
 
-			line_count++;
-		}
+        int line_count = 0;
+        int a,b,c;
+        while (in_file >> a >> b >> c) {
+            array[line_count][0] = line_count+1;
+            array[line_count][1] = a;
+            array[line_count][2] = b;
+            array[line_count][3] = c;
 
-		in_file.close();
+            cout << line_count << "  " << a << " " << b << " " << c << endl;
 
-		// for (int x = 0; x < n; x++)
-		// 	for (int y = 0; y < 4; y++)
-		// 		cout << "input_array[" << x << "][" << y << "] is: " << input_array[x][y] << endl;
+            line_count++;
+        }
 
-	}
-	else
-		cout << "Error opening input file" << endl;
+        in_file.close();
+
+        // for (int x = 0; x < n; x++)
+        //  for (int y = 0; y < 4; y++)
+        //      cout << "array[" << x << "][" << y << "] is: " << array[x][y] << endl;
+
+    }
+    else
+        cout << "Error opening input file" << endl;
 }
 
-// modified quicksort for sorting second value from largest to shortest
-int** Input::modified_qsort(int** arr, int s, int e) {
+// // prints output to output file
+// void Input::output() {
+//     // init output file
+//     ofstream out_file("output.txt");
+//     if (out_file.is_open()) {
+//         // print output to file
+//         out_file << input_array << endl;
+//     }
+//     else
+//         cout << "Error opening output file" << endl;
+
+//     // closing output files
+//     out_file.close();
+// }
+
+// decending quicksort with column input
+void Input::decend_qsort(int arr[][4], int s, int e, int c) {
     int start = s, end = e;
     int tmp;
-    int pivot = arr[s+(e-s)/2][1];
+    // pivot
+    int p = arr[s+(e-s)/2][c];
 
     while (start <= end) {
-        while (arr[start][1] > pivot)
+        while (arr[start][c] > p)
             start++;
 
-        while (arr[end][1] < pivot)
+        while (arr[end][c] < p)
             end--;
 
         if (start <= end) {
-            for (int index = 0; index < 4; index++) {
-                tmp = arr[start][index];
-                arr[start][index] = arr[end][index];
-                arr[end][index] = tmp;
+            for (int i = 0; i < 4; i++) {
+                tmp = arr[start][i];
+                arr[start][i] = arr[end][i];
+                arr[end][i] = tmp;
             }
-
+            
             start++;
             end--;
         }
     }
+
     if (s < end)
-        return modified_qsort(arr, s, end);
+        decend_qsort(arr, s, end, c);
     if (start < e)
-        return modified_qsort(arr, start, e);
+        decend_qsort(arr, start, e, c);
 }
 
-// Longest Processing Time algorithm
-void Input::LPT() {
-	/*
-	assigns a schedule for parallel machines
-	only uses each second value in 2D array
-	*/
-	cout << "LPT start" << endl;
-	// copying the array
-	int** qsort_array;
-	qsort_array = new int*[n];
-		for (int i = 0; i < n; i++) {
-			qsort_array[i] = new int[4];
-		}
+// ascending quicksort with column input
+void Input::ascend_qsort(int arr[][4], int s, int e, int c) {
+    int start = s, end = e;
+    int tmp;
+    // pivot
+    int p = arr[s+(e-s)/2][c];
 
-	for (int x = 0; x < n; x++)
-		for (int y = 0; y < 4; y++)
-			qsort_array[x][y] = input_array[x][y];
-	
-	modified_qsort(qsort_array, 0, n-1);
+    while (start <= end) {
+        while (arr[start][c] < p)
+            start++;
 
-	for (int x = 0; x < n; x++)
-		cout << x << ": " << qsort_array[x][0] << "  " << qsort_array[x][1] << " " << qsort_array[x][2] << " " << qsort_array[x][3] << endl;
+        while (arr[end][c] > p)
+            end--;
 
-	cout << "LTP finish" << endl;
+        if (start <= end) {
+            for (int i = 0; i < 4; i++) {
+                tmp = arr[start][i];
+                arr[start][i] = arr[end][i];
+                arr[end][i] = tmp;
+            }
+            
+            start++;
+            end--;
+        }
+    }
+
+    if (s < end)
+        ascend_qsort(arr, s, end, c);
+    if (start < e)
+        ascend_qsort(arr, start, e, c);
 }
 
-// modified quicksort for sorting from third and fourth value
-int** _2qsort(int**, int, int) {
-
+// LPT with number of machines as input
+void Input::LPT(int m) {
+    // sort by column 1
+    decend_qsort(array, 0, n-1, 1);
 }
 
-// Johnson's algorithm
+// johnsons algorithm
 void Input::johnsons() {
-	/*
-	assigns a schedule for flowshop
-	uses each third and fourth values in 2D array
-	*/
-	cout << "johnsons" << endl;
-	// copying the array
-	int** _2sort_array;
-	_2sort_array = new int*[n];
-		for (int i = 0; i < n; i++) {
-			_2sort_array[i] = new int[4];
-		}
-
-	for (int x = 0; x < n; x++)
-		for (int y = 0; y < 4; y++)
-			_2sort_array[x][y] = input_array[x][y];
-
-	_2qsort(_2sort_array, 0, n-1);
-
-	for (int x = 0; x < n; x++) {
-		cout << x << ": " << _2sort_array[x][0] << "  " << _2sort_array[x][1] << " " << _2sort_array[x][2] << " " << _2sort_array[x][3] << endl;
-
+    // splitting array
+    int tmp;
+    int start = 0, end = n-1;
+    while (start < end) {
+        while (array[start][2] < array[start][3])
+            start++;
+        while (array[end][2] > array[end][3])
+            end--;
+        if (array[start][2] > array[start][3] && array[end][2] < array[end][3]) { // array[start] and array[end] swap
+            for (int i = 0; i < 4; i++) {
+                tmp = array[start][i];
+                array[start][i] = array[end][i];
+                array[end][i] = tmp;
+            }
+            start++;
+            end--;
+        }
+    }
+    // grabbing index
+    int index;
+    for (int i = 0; i < n; i++) {
+        if (array[i][2] > array[i][3]) {
+            index = i;
+            break;
+        }
+    }
+    // sorting two parts of array
+    ascend_qsort(array, 0, index-1, 2);
+    decend_qsort(array, index, n-1, 3);
 }
-
-// prints output to output file
-void Input::output() {
-	// init output file
-	ofstream out_file("output.txt");
-	if (out_file.is_open()) {
-		// print output to file
-		out_file << input_array << endl;
-	}
-	else
-		cout << "Error opening output file" << endl;
-
-	// closing output files
-	out_file.close();
-}
-
 
 int main() {
-	Input inarray;
-	inarray.LPT();
-	// inarray.modified_qsort(inarray.input_array, 0, inarray.n-1);
-	inarray.print_input();
-	inarray.output();
-	return 0;
+
+    Input a;
+
+    // number of machines 2
+    a.LPT(2);
+
+    cout << "LPT" << endl;
+
+    // LPT
+    for (int i = 0; i < 10; i++)
+        cout << i << ": " << a.array[i][0] << "   " << a.array[i][1] << endl;
+
+    a.johnsons();
+
+    cout << "johnsons" << endl;
+
+    // johnsons
+    for (int i = 0; i < 10; i++)
+        cout << i << ": " << a.array[i][0] << "   " << a.array[i][2] << " " << a.array[i][3] << endl;
+
+    return 0;
 }
