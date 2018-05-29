@@ -68,7 +68,7 @@ Input::Input() {
         //  array[i] = new int[4];
         // }
 
-        cout << n << endl;
+        cout << m << " " << n << endl;
         array[n][4];
 
         int line_count = 0;
@@ -79,7 +79,7 @@ Input::Input() {
             array[line_count][2] = b;
             array[line_count][3] = c;
 
-            cout << line_count << "  " << a << " " << b << " " << c << endl;
+            cout << line_count+1 << "  " << a << " " << b << " " << c << endl;
 
             line_count++;
         }
@@ -182,25 +182,27 @@ void Input::LPT() {
     // start m machines
     int machine[m] = {};
     // save start time a
-    int start[n][2];
+    int start_lpt[n][2];
     int index = 0;
     while (index < n) {
         // find index of minimum element
-        int* d = min_element(machine,machine+m); //
+        int* d = min_element(machine, machine+m); //
        	int ind = d-machine; //
 
-       	start[array[index][0]-1][0] = ind+1;
-       	start[array[index][0]-1][1] = machine[ind];
+       	start_lpt[array[index][0]-1][0] = ind+1;
+       	start_lpt[array[index][0]-1][1] = machine[ind];
 
        	machine[ind] += array[index][1];
 
        	index++;
 
     }
-    cout << "LPT machines" << endl;
+
+    int LPT_makespan = *max_element(machine, machine+m);
+    cout << "LPT machines " << LPT_makespan << endl;
 
     for (int i = 0; i< n; i++)
-    	cout << i << ": " << start[i][0] << "  " << start[i][1] << endl;
+    	cout << i << ": " << start_lpt[i][0] << "  " << start_lpt[i][1] << endl;
 
 }
 
@@ -235,6 +237,42 @@ void Input::johnsons() {
     // sorting two parts of array
     ascend_qsort(array, 0, index-1, 2);
     decend_qsort(array, index, n-1, 3);
+
+    // start 2 machines as flowshop
+    int flowshop[2] = {0, array[0][2]};
+    // save start time b and c
+    int start_johnson[n][2];
+
+    start_johnson[0][0] = flowshop[0];
+	flowshop[0] += array[0][2];
+	
+	start_johnson[0][1] = flowshop[1];
+	flowshop[1] += array[0][3];
+
+    for (int i = 1; i < n; i++) { 
+    	// for each job
+
+    	start_johnson[i][0] = flowshop[0];
+    	flowshop[0] += array[i][2];
+
+    	if (flowshop[0] > flowshop[1]) {
+    		flowshop[1] = flowshop[0];
+    	}
+    	start_johnson[i][1] = flowshop[1];
+	    flowshop[1] += array[i][3];
+    	
+    }
+
+    int johnsons_makespan = flowshop[1];
+
+    cout << "johnsons machines " << johnsons_makespan << endl;
+
+    for (int i = 0; i< n; i++)
+    	cout << i << ": " << start_johnson[i][0] << "  " << start_johnson[i][1] << endl;
+}
+
+void Algorithm_A() {
+
 }
 
 int main() {
