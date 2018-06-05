@@ -1,9 +1,12 @@
+#include <utility>
 #include <iostream>
 // (file)stream for input and output from and to files
 #include <fstream>
 // for min
-#include <algorithm>
+// #include <algorithm>
 #include <vector>
+
+
 
 using namespace std;
 
@@ -43,19 +46,23 @@ where M is the makespan
 struct Input {
     // int n = 10;
     // int array[10][4] = { {1, 1, 2, 3}, {2, 9, 31, 14}, {3, 35, 23, 12}, {4, 21, 34, 11}, {5, 6, 8, 15}, {6, 4, 7, 6}, {7, 12, 29, 10}, {8, 13, 17, 25}, {9, 22, 20, 30}, {10, 16, 19, 18} };
-    int n,m;
-    vector< vector< int > > array;
-
+    int n, m;
+    // int array[99999][4];
+    vector< vector<int> > array;
     Input();
     // void output(void);
+    // void decend_qsort(int[][4], int, int, int);
+    // void ascend_qsort(int[][4], int, int, int);
     void decend_qsort(vector< vector< int > >&, int, int, int);
     void ascend_qsort(vector< vector< int > >&, int, int, int);
+    void i_sort(vector< vector< int > >&, int);
     void LPT(void);
     void johnsons(void);
 };
 
 // default constructor for Input class
 Input::Input() {
+	cout << "input" << endl;
     // reading the input file
     ifstream in_file("input.txt");
 
@@ -69,34 +76,32 @@ Input::Input() {
         //  array[i] = new int[4];
         // }
 
-        cout << m << " " << n << endl;
+        // cout << m << " " << n << endl;
+
+        // array[n][4];
 
         int line_count = 0;
         int a,b,c;
         while (in_file >> a >> b >> c) {
-            vector<int> row;
-            row.push_back(line_count+1);
-            row.push_back(a);
-            row.push_back(b);
-            row.push_back(c);
+        	vector<int> row;
+        	row.push_back(line_count+1);
+        	row.push_back(a);
+        	row.push_back(b);
+        	row.push_back(c);
 
-            array.push_back(row);
+        	array.push_back(row);
 
-            // array[line_count][0] = line_count+1;
+            // array[line_count][0] = line_count;
             // array[line_count][1] = a;
             // array[line_count][2] = b;
             // array[line_count][3] = c;
 
-            cout << line_count+1 << "  " << a << " " << b << " " << c << endl;
+            // cout << line_count << "  " << a << " " << b << " " << c << endl;
 
             line_count++;
         }
 
         in_file.close();
-
-        // for (int x = 0; x < n; x++)
-        //  for (int y = 0; y < 4; y++)
-        //      cout << "array[" << x << "][" << y << "] is: " << array[x][y] << endl;
 
     }
     else
@@ -119,7 +124,9 @@ Input::Input() {
 // }
 
 // decending quicksort with column input
+// void Input::decend_qsort(int arr[][4], int s, int e, int c) {
 void Input::decend_qsort(vector< vector< int > >& arr, int s, int e, int c) {
+	cout << "decend" << endl;
     int start = s, end = e;
     int tmp;
     // pivot
@@ -152,6 +159,7 @@ void Input::decend_qsort(vector< vector< int > >& arr, int s, int e, int c) {
 
 // ascending quicksort with column input
 void Input::ascend_qsort(vector< vector< int > >& arr, int s, int e, int c) {
+	cout << "ascend" << endl;
     int start = s, end = e;
     int tmp;
     // pivot
@@ -183,39 +191,107 @@ void Input::ascend_qsort(vector< vector< int > >& arr, int s, int e, int c) {
 }
 
 // LPT with number of machines as input
+// void Input::LPT() {
+//     // sort by column 1
+//     decend_qsort(array, 0, n-1, 1);
+
+//     // start m machines
+//     int machine[m] = {};
+//     // save start time a
+//     int start_lpt[n][2];
+//     int index = 0;
+//     while (index < n) {
+//         // find index of minimum element
+//         int* d = min_element(machine, machine+m); //
+//        	int ind = d-machine; //
+
+//        	start_lpt[array[index][0]-1][0] = ind+1;
+//        	start_lpt[array[index][0]-1][1] = machine[ind];
+
+//        	machine[ind] += array[index][1];
+
+//        	index++;
+
+//     }
+
+//     int LPT_makespan = *max_element(machine, machine+m);
+//     cout << "LPT machines " << LPT_makespan << endl;
+
+//     for (int i = 0; i < n; i++)
+//     	cout << i << ": " << i+1 << " " << start_lpt[i][0] << "  " << start_lpt[i][1] << endl;
+
+// }
+
+void Input::i_sort(vector< vector< int > >& mac, int size) {
+	cout << "isort" << endl;
+	int key;
+	vector<int> temp;
+	cout << "vec" << endl;
+	for (int i = 1; i < size; i++) {
+		cout << "temp";
+		temp = mac[i];
+		cout << "after";
+		key = mac[i][1];
+		int j = i-1;
+
+		while (j >= 0 && mac[j][1] > key) {
+			// swap
+			cout << "swapped" << endl;
+        	mac[j+1] = mac[j];
+            j = j-1;
+        }
+        mac[j+1] = temp;
+	}
+}
+
 void Input::LPT() {
-    // sort by column 1
-    decend_qsort(array, 0, n-1, 1);
+	cout << "LPT func" << endl;
+	// sort by column 1
+	decend_qsort(array, 0, n-1, 1);
 
-    // start m machines
-    int machine[m] = {};
-    // save start time a
-    int start_lpt[n][2];
-    int index = 0;
-    while (index < n) {
-        // find index of minimum element
-        int* d = min_element(machine, machine+m); //
-       	int ind = d-machine; //
+	// start m machines
+	vector< vector<int> > machine;
+	for (int i = m; i > 0; i--) {
+		vector<int> row;
 
-       	start_lpt[ array[index][0]-1 ][0] = ind+1;
-       	start_lpt[ array[index][0]-1 ][1] = machine[ind];
+		row.push_back(i-1);
+		row.push_back(0);
 
-       	machine[ind] += array[index][1];
+		machine.push_back(row);
+	}
+	// save start time a
+	int start_lpt[n][2];
+	int count = 0;
 
-       	index++;
+	int index;
+	while (count < n) {
+		cout << "LPT " << count << endl; 
+		// save start time
+		start_lpt[ array[count][0] ][1] = machine[m-1][1];
+		// and machine number
+		start_lpt[ array[count][0] ][0] = machine[m-1][0];
 
-    }
+		// adding time to last element on machine
+		machine[m-1][1] += array[count][1];
+		// resort
 
-    int LPT_makespan = *max_element(machine, machine+m);
-    cout << "LPT machines " << LPT_makespan << endl;
 
-    for (int i = 0; i< n; i++)
-    	cout << i << ": " << start_lpt[i][0] << "  " << start_lpt[i][1] << endl;
+		// index = find_index(machine, m, 0, m-1);
+		i_sort(machine, machine.size());
 
+
+		// insert
+		vector<int> tmp = machine[m-1];
+		machine.pop_back();
+		machine.insert(machine.begin()+index, tmp);
+
+		count++;
+	}
 }
 
 // johnsons algorithm
 void Input::johnsons() {
+	cout << "johnsons func" << endl;
     // splitting array
     int tmp;
     int start = 0, end = n-1;
@@ -284,6 +360,7 @@ void Algorithm_A() {
 }
 
 int main() {
+	cout << "main" << endl;
 
     Input a;
 
