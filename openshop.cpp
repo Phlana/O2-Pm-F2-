@@ -47,7 +47,6 @@ struct Input {
     int n, m;
     vector< vector<int> > array;
     Input();
-    // void output(void);
 
     void decend_qsort(vector< vector< int > >&, int, int, int);
     void ascend_qsort(vector< vector< int > >&, int, int, int);
@@ -58,8 +57,7 @@ struct Input {
     int lower_bound(void);
     int Algorithm_A(void);
     int Algorithm_B1(void);
-    int Algorithm_B2(void);
-    // int Algorithm_B3(void);
+    int Algorithm_B2_3(void);
 };
 
 void print_vec(vector< vector< int > >& prn) {
@@ -105,21 +103,6 @@ Input::Input() {
         cout << "Error opening input file" << endl;
 }
 
-// // prints output to output file
-// void Input::output() {
-//     // init output file
-//     ofstream out_file("output.txt");
-//     if (out_file.is_open()) {
-//         // print output to file
-//         out_file << input_array << endl;
-//     }
-//     else
-//         cout << "Error opening output file" << endl;
-
-//     // closing output files
-//     out_file.close();
-// }
-
 // decending quicksort with column input
 void Input::decend_qsort(vector< vector< int > >& arr, int s, int e, int c) {
 	// cout << "decend" << endl;
@@ -130,7 +113,8 @@ void Input::decend_qsort(vector< vector< int > >& arr, int s, int e, int c) {
 
     while (start <= end) {
         while (arr[start][c] > p)
-            start++;
+        	// if (start < e)
+	            start++;
 
         while (arr[end][c] < p)
             end--;
@@ -263,11 +247,19 @@ int Input::johnsons(vector< vector< int > >& johnson_arr, vector< vector< int > 
     // splitting johnson_arr
     int tmp;
     int start = 0, end = johnson_arr.size()-1;
-    while (start < end) {
-        while (johnson_arr[start][2] < johnson_arr[start][3])
-            start++;
-        while (johnson_arr[end][2] > johnson_arr[end][3])
-            end--;
+    while (start < end) { ///////////////////////////////////////////
+        while (johnson_arr[start][2] < johnson_arr[start][3]) {
+        	if (start < johnson_arr.size()-1)
+            	start++;
+            else
+            	break;
+        }
+        while (johnson_arr[end][2] > johnson_arr[end][3]) {
+        	if (end > 0)
+	            end--;
+	        else
+	        	break;
+        }
         if (johnson_arr[start][2] > johnson_arr[start][3] && johnson_arr[end][2] < johnson_arr[end][3]) { // johnson_arr[start] and johnson_arr[end] swap
             for (int i = 0; i < 4; i++) {
                 tmp = johnson_arr[start][i];
@@ -278,17 +270,22 @@ int Input::johnsons(vector< vector< int > >& johnson_arr, vector< vector< int > 
             end--;
         }
     }
+
     // grabbing index
-    int index;
-    for (int i = 0; i < johnson_arr.size(); i++) {
-        if (johnson_arr[i][2] > johnson_arr[i][3]) {
-            index = i;
+    int index = 0;
+    for (int i = johnson_arr.size()-1; i <= 0; i--) {
+        if (johnson_arr[i][2] < johnson_arr[i][3]) {
+            index = i+1;
             break;
         }
     }
+    
+    cout << index << endl;
+
     // sorting two parts of johnson_arr
     ascend_qsort(johnson_arr, 0, index-1, 2);
-    decend_qsort(johnson_arr, index, johnson_arr.size()-1, 3);
+    decend_qsort(johnson_arr, index, johnson_arr.size()-1, 3); //////
+    cout << "sorted" << endl;
 
     // start 2 machines as flowshop
     int flowshop[2] = {s, johnson_arr[0][2]+s};
@@ -327,6 +324,21 @@ int Input::johnsons(vector< vector< int > >& johnson_arr, vector< vector< int > 
 }
 
 int Input::Algorithm_A() {
+	if (m < 2) {
+		cout << "Algorithm A conditions not met" << endl;
+
+		ofstream out_file;
+	    out_file.open("output.txt", ofstream::trunc);
+		if (out_file.is_open()) {
+
+			out_file << "Algorithm A" << endl;
+			out_file << -1 << endl;
+		}
+		else
+        	cout << "Error opening output file" << endl;
+
+		return -1;
+	}
 	// first the job list is sorted decending column 1
 	decend_qsort(array, 0, n-1, 1);
 	// split job schedule 
@@ -351,24 +363,24 @@ int Input::Algorithm_A() {
 	int johnsons_makespan_1 = johnsons(J_2, johnson_schedule_1, 0);
 	int T_1 = max(LPT_makespan_1, johnsons_makespan_1);
 
+	print_vec(J_1);
 	int LPT_makespan_2 =LPT(J_2, LPT_schedule_2, T_1);
-	int johnsons_makespan_2 = johnsons(J_1, johnson_schedule_2, T_1);
+	int johnsons_makespan_2 = johnsons(J_1, johnson_schedule_2, T_1); /////////
 	int T_2 = max(LPT_makespan_2, johnsons_makespan_2);
-
 	// output to file
     ofstream out_file;
     out_file.open("output.txt", ofstream::trunc);
 
     if (out_file.is_open()) {
-        out_file << "Algorithm A: " << T_2 << endl;
-        out_file << "A" << endl;
+        out_file << "Algorithm A" << endl;
+        out_file << T_2 << endl;
         for (int i = 0; i < LPT_schedule_1.size(); i++)
         	if (LPT_schedule_1[i][0] >= 0)
 	        	out_file << i+1 << " " << LPT_schedule_1[i][0] << " " << LPT_schedule_1[i][1] << endl;
         for (int i = 0; i < LPT_schedule_2.size(); i++)
         	if (LPT_schedule_2[i][0] >= 0)
         		out_file << i+1 << " " << LPT_schedule_2[i][0] << " " << LPT_schedule_2[i][1] << endl;
-        out_file << "B and C" << endl;
+        // out_file << "B and C" << endl;
         for (int i = 0; i < J_2.size(); i++)
         	out_file << johnson_schedule_1[i][0] << " " << johnson_schedule_1[i][1] << " " << johnson_schedule_1[i][2] << endl;
     	for (int i = 0; i < J_1.size(); i++)
@@ -379,6 +391,7 @@ int Input::Algorithm_A() {
 
 	// closing output files
     out_file.close();
+    cout << "Algorithm A finish" << endl;
 
 	return T_2;
 }
@@ -433,7 +446,7 @@ int Input::Algorithm_B1() {
 	vector< vector< int > > J;
 	bool removed = false;
 	for (int i = 0; i < n; i++) {
-		if (array[i][1] < LB/3 || removed) // only remove one job
+		if (array[i][1] < LB/3 || removed)
 			J.push_back(array[i]);
 		else {
 			J_l = array[i];
@@ -441,8 +454,21 @@ int Input::Algorithm_B1() {
 		}
 	}
 
-	if (!removed)
+	if (!removed) {
+		cout << "Algorithm B1 conditions not met" << endl;
+
+		ofstream out_file;
+	    out_file.open("output.txt", ofstream::app);
+		if (out_file.is_open()) {
+
+			out_file << "Algorithm B1" << endl;
+			out_file << -1 << endl;
+		}
+		else
+        	cout << "Error opening output file" << endl;
+
 		return -1;
+	}
 
 	vector< vector< int > > schedule;
 	j_make = johnsons(J, schedule, 0);
@@ -451,22 +477,22 @@ int Input::Algorithm_B1() {
 	int T_2 = max(J_l[1], j_make);
 	int T_3 = max(T_1 + J_l[2], j_make);
 
-	int B_make = max(T_2 + A - J_l[1], T_3 + J_l[3]);
+	int B1_make = max(T_2 + A - J_l[1], T_3 + J_l[3]);
 
 	// output to file
 	ofstream out_file;
     out_file.open("output.txt", ofstream::app);
 
     if (out_file.is_open()) {
-        out_file << "Algorithm B1: " << B_make << endl;
-        out_file << "A" << endl;
-        out_file << J_l[0] << " " << J_l[1] << endl;
+        out_file << "Algorithm B1" << endl;
+        out_file << B1_make << endl;
+        out_file << J_l[0] << " " << 0 << endl;
         int start = T_2;
         for (int i = 0; i < J.size(); i++) {
         	out_file << J[i][0] << " " << start << endl;
         	start += J[i][1];
         }
-        out_file << "B and C" << endl;
+        // out_file << "B and C" << endl;
         for (int i = 0; i < J.size(); i++)
         	out_file << schedule[i][0] << " " << schedule[i][1] << " " << schedule[i][2] << endl;
         out_file << J_l[0] << " " << T_1 << " " << T_3 << endl;
@@ -477,18 +503,33 @@ int Input::Algorithm_B1() {
 	// closing output files
     out_file.close();
 
-	return B_make;
+	return B1_make;
 }
 
 // Algorithm B2 assumes only one parallel machine and for all a_j, where a_j < LB/3
-int Input::Algorithm_B2() {
+int Input::Algorithm_B2_3() {
 	// find lower bound
 	int LB = lower_bound();
+	// cout << "LB " << LB << endl;
 
 	// make sure no jobs are >= LB/3
+	int ALGB2 = 0;
 	for (int i = 0; i < n; i++)
-		if (array[i][1] >= LB/3)
-			return -1;
+		if (array[i][1] >= LB/3) {
+			cout << "Algorithm B2 conditions not met" << endl;
+
+			ofstream out_file;
+		    out_file.open("output.txt", ofstream::app);
+			if (out_file.is_open()) {
+
+				out_file << "Algorithm B2" << endl;
+				out_file << -1 << endl;
+			}
+			else
+	        	cout << "Error opening output file" << endl;
+
+			ALGB2 = -1; // change to -1 so skips most of algorithm B2
+		}
 
 	// computing initial schedule
 	vector< vector< int > > schedule;
@@ -506,6 +547,7 @@ int Input::Algorithm_B2() {
 
 	// constructing inital schedule with johnsons at 0 and A at 0
 	for (int i = 0; i < n; i++) {
+		// job numbers
 		A_row[0] = array[i][0];
 		B_row[0] = array[i][0];
 		C_row[0] = array[i][0];
@@ -513,21 +555,21 @@ int Input::Algorithm_B2() {
 		A.push_back(A_row);
 		B.push_back(B_row);
 
-		A_row[1] = A_row[1] + array[i][1];
-		B_row[1] = B_row[1] + array[i][1];
+		A_row[1] += array[i][1];
+		B_row[1] += array[i][2];
 		if (C_row[1] >= B_row[1]) {
 			C.push_back(C_row);
-			C_row[1] = C_row[1] + array[i][1];
+			C_row[1] = C_row[1] + array[i][3];
 		}
 		else {
 			C.push_back(B_row);
-			C_row[1] = B_row[1] + array[i][1];
+			C_row[1] = B_row[1] + array[i][3];
 		}
 	}
 
 	// now delay C so that all jobs are processed cosecuitively
 	for (int i = n-2; i >= 0; i--) {
-		int dif = C[i+1][1] - C[i][1] + array[i][3];
+		int dif = C[i+1][1] - (C[i][1] + array[i][3]);
 		C[i][1] += dif;
 	}
 
@@ -545,8 +587,9 @@ int Input::Algorithm_B2() {
 
 	// T_0 has been found
 	int T_0 = B[0][1];
+	// cout << "T_0 " << T_0 << endl;
 
-	// find delta and delta_1
+	// find delta, delta_1, and J_l
 	int delta;
 	int job;
 	for (int i = n-1; i >= 0; i--) {
@@ -556,9 +599,349 @@ int Input::Algorithm_B2() {
 			break;
 		}
 	}
+	// cout << "job " << job << " and " << A[job][1] << " " << A[job+1][1] << endl;
+
 
 	int delta_1 = C[0][1] - B[0][1];
 
+	// if (T_0 <= (LB * 2)/3) {
+	// 	return -2;
+	// }
+
+	// at time 0, process J_l and J_2 consecutively on A
+	vector< vector< int > > A_schedule2;
+	vector< vector< int > > B_schedule2;
+	vector< vector< int > > C_schedule2;
+	int A_time = 0, B_time = 0, C_time = 0;
+
+	for (int i = job; i < n; i++) {
+		vector<int> tmp;
+		tmp.push_back(A[i][0]);
+		tmp.push_back(A_time);
+		// cout << "added A_time " << A[i][1] << endl;
+		A_time += array[i][1];
+
+		A_schedule2.push_back(tmp);
+	}
+
+	// at time 0, process J_1 consecutively on B
+	for (int i = 0; i < job; i++) {
+		vector<int> tmp;
+		tmp.push_back(B[i][0]);
+		tmp.push_back(B_time);
+		B_time += array[i][2];
+
+		B_schedule2.push_back(tmp);
+	}
+
+	// at time B(J_1) + delta, process J_l and J_2 consecutively on B
+	int old_B_time = B_time;
+	B_time += delta;
+	for (int i = job; i < n; i++) {
+		vector<int> tmp;
+		tmp.push_back(B[i][0]);
+		tmp.push_back(B_time);
+		B_time += array[i][2];
+
+		B_schedule2.push_back(tmp);
+	}
+	// at time min(delta_1, old_B_time), process J_1 consecutively on C
+	C_time = min(delta_1, old_B_time);
+	for (int i = 0; i < job; i++) {
+		vector<int> tmp;
+		tmp.push_back(C[i][0]);
+		tmp.push_back(C_time);
+		C_time += array[i][3];
+
+		C_schedule2.push_back(tmp);
+	}
+	// at time delta + delta_1 + C_time, process J_l and J_2 consecutively on C
+	int old_C_time = C_time;
+	C_time = delta + delta_1 + C_time;
+	for (int i = job; i < n; i++) {
+		vector<int> tmp;
+		tmp.push_back(C[i][0]);
+		tmp.push_back(C_time);
+		C_time += array[i][3];
+
+		C_schedule2.push_back(tmp);
+	}
+	// at time max(A_time, old_C_time), process J_1 consecutively on A
+	A_time = max(A_time, old_C_time);
+	for (int i = 0; i < job; i++) {
+		vector<int> tmp;
+		tmp.push_back(A[i][0]);
+		tmp.push_back(A_time);
+		A_time += array[i][1];
+
+		A_schedule2.push_back(tmp);
+	}
+
+	// Algorithm B2 makespan
+	int B2_make = max( max(A_time, B_time), C_time);
+
+	// output to file
+	ofstream out_file;
+	if (ALGB2 == 0) {
+		
+	    out_file.open("output.txt", ofstream::app);
+
+	    if (out_file.is_open()) {
+	        out_file << "Algorithm B2" << endl;
+	        out_file << B2_make << endl;
+	        for (int i = 0; i < n; i++)
+	        	out_file << A_schedule2[i][0] << " " << A_schedule2[i][1] << endl;
+	        // out_file << "B and C" << endl;
+	        for (int i = 0; i < n; i++)
+	        	out_file << B_schedule2[i][0] << " " << B_schedule2[i][1] << " " << C_schedule2[i][1] << endl;
+	    }
+	    else
+	        cout << "Error opening output file" << endl;
+
+		// closing output files
+	    out_file.close();
+	}
+
+
+    // start of Algorithm B3
+    // assuming a(J_1) > 2LB/3 and c(J_1) > 2LB/3
+
+    // making subsets J_1 and J_2, and finding job J_l
+    vector< vector< int > > J_1;
+    vector< vector< int > > J_2;
+    vector<int> J_l;
+    int J_1_A_time = 0, J_2_A_time = 0;
+    int J_1_C_time = 0, J_3_C_time = 0;
+
+    int J_3_A_time = 0;
+    for (int i = 0; i < job; i++) {
+    	J_1.push_back(array[i]);
+    	J_1_A_time += array[i][1];
+    	J_1_C_time += array[i][3];
+    }
+    for (int i = job+1; i < n; i++) {
+    	J_2.push_back(array[i]);
+    	J_2_A_time += array[i][1];
+    }
+   	J_l = array[job];
+
+    // creating job subset J_3
+    vector< vector< int > > J_3;
+    bool completed = false;
+
+    // if there is a job where c(J) >= LB/3, J_3 will consist of only that job
+    for (int i = 0; i < job && !completed; i++) {
+    	if (J_1[i][3] >= LB/3) {
+    		J_3.push_back(J_1[i]);
+    		J_1.erase(J_1.begin() + i);
+    		J_3_C_time = J_3[0][3];
+    		J_3_A_time = J_3[0][1];
+    		completed = true;
+    	}
+    }
+
+    int T_3 = old_B_time;
+    if (!completed) {
+	    // else add jobs til sum of c is >= LB/3
+	    int c_sum = 0;
+	    int a_sum = 0;
+	    int index;
+	    for (int i = job-1; i >= 0 && c_sum < LB/3; i--) {
+	    	c_sum += J_1[i][3];
+	    	a_sum += J_1[i][1];
+	    	index = i;
+	    }
+
+	    if (a_sum <= (LB*2)/3) {
+	    	for (int i = job-1; i >= index; i--) {
+	    		J_3.insert(J_3.begin(), J_1[i]);
+	    		J_3_C_time += J_1[i][3];
+	    		J_3_A_time += J_1[i][1];
+	    		J_1.erase(J_1.begin() + i);
+	    		// J_1.pop_back();
+	    	}
+	    }
+
+	    else {
+	    	for (int i = index-1; i >= 0; i--) {
+	    		J_3.insert(J_3.begin(), J_1[i]);
+	    		J_3_C_time += J_1[i][3];
+	    		J_3_A_time += J_1[i][3];
+	    		J_1.erase(J_1.begin() + i);
+	    		// J_1.pop_back();
+	    	}
+	    	T_3 = min(delta_1, old_B_time);
+	    }
+	}
+
+	int ALGB3 = 0;
+    // making sure a(J_1) > 2LB/3 and c(J_1) > 2LB/3
+	if (J_1_A_time + J_3_A_time > (LB*2)/3 || J_1_C_time + J_3_C_time > (LB*2)/3) {
+		cout << "Algorithm B3 conditions not met" << endl;
+
+		ofstream out_file;
+	    out_file.open("output.txt", ofstream::app);
+		if (out_file.is_open()) {
+
+			out_file << "Algorithm B3" << endl;
+			out_file << -1 << endl;
+		}
+		else
+        	cout << "Error opening output file" << endl;
+
+		ALGB3 = -1;
+	}
+
+	// J_3 has been created and J_1 = J_1 - J_3
+
+	// clearing times
+	A_time = 0, B_time = 0, C_time = 0;
+
+	vector< vector< int > > A_schedule3;
+	vector< vector< int > > B_schedule3;
+	vector< vector< int > > C_schedule3;
+
+	// at time 0, process J_l and J_2 consecutively on A
+	vector<int> tmp;
+	tmp.push_back(J_l[0]);
+	tmp.push_back(A_time);
+
+	A_time += J_l[1];
+	A_schedule3.push_back(tmp);
+
+	for (int i = 0; i < J_2.size(); i++) {
+		vector<int> tmp;
+		tmp.push_back(J_2[i][0]);
+		tmp.push_back(A_time);
+
+		A_time += J_2[i][1];
+		A_schedule3.push_back(tmp);
+	}
+
+	// at time 0, process J_1 and J_3 consecutively on B
+	for (int i = 0; i < J_1.size(); i++) {
+		vector<int> tmp;
+		tmp.push_back(J_1[i][0]);
+		tmp.push_back(B_time);
+
+		B_time += J_1[i][2];
+		B_schedule3.push_back(tmp);
+	}
+	for (int i = 0; i < J_3.size(); i++) {
+		vector<int> tmp;
+		tmp.push_back(J_3[i][0]);
+		tmp.push_back(B_time);
+
+		B_time += J_3[i][2];
+		B_schedule3.push_back(tmp);
+	}
+
+	// at time old_B_time + delta, process J_l and J_2 consecutively on B
+	B_time = old_B_time + delta;
+	tmp.clear();
+	tmp.push_back(J_l[0]);
+	tmp.push_back(B_time);
+
+	B_time += J_l[2];
+	B_schedule3.push_back(tmp);
+
+	for (int i = 0; i < J_2.size(); i++) {
+		vector<int> tmp;
+		tmp.push_back(J_2[i][0]);
+		tmp.push_back(B_time);
+
+		B_time += J_2[i][2];
+		B_schedule3.push_back(tmp);
+	}
+
+	// at time T_3, process J_1 and J_3 consecutively on C
+	C_time = T_3;
+	for (int i = 0; i < J_1.size(); i++) {
+		vector<int> tmp;
+		tmp.push_back(J_1[i][0]);
+		tmp.push_back(C_time);
+
+		C_time += J_1[i][3];
+		C_schedule3.push_back(tmp);
+	}
+	for (int i = 0; i < J_3.size(); i++) {
+		vector<int> tmp;
+		tmp.push_back(J_3[i][0]);
+		tmp.push_back(C_time);
+
+		C_time += J_3[i][3];
+		C_schedule3.push_back(tmp);
+	}
+
+	// set times 1, 2, and 4
+	int T_1 = max(J_l[1] + J_2_A_time, T_3 + J_1_C_time);
+	int T_2 = max(T_1 + J_1_A_time, T_3 + J_1_C_time + J_3_C_time);
+	int T_4 = max(T_3 + J_1_C_time + J_3_C_time, delta + delta_1 + J_1_C_time + J_3_C_time);
+
+	// at time T_1, process J_1 consecutively on A
+	A_time = T_1;
+	for (int i = 0; i < J_1.size(); i++) {
+		vector<int> tmp;
+		tmp.push_back(J_1[i][0]);
+		tmp.push_back(A_time);
+
+		A_time += J_1[i][1];
+		A_schedule3.push_back(tmp);
+	}
+
+	// at time T_2, process J_3 consecutively on A
+	A_time = T_2;
+	for (int i = 0; i < J_3.size(); i++) {
+		vector<int> tmp;
+		tmp.push_back(J_3[i][0]);
+		tmp.push_back(A_time);
+
+		A_time += J_3[i][1];
+		A_schedule3.push_back(tmp);
+	}
+
+	// at time T_4, process J_l and J_2 consecutively on C
+	C_time = T_4;
+	tmp.clear();
+	tmp.push_back(J_l[0]);
+	tmp.push_back(C_time);
+
+	C_time += J_l[3];
+	C_schedule3.push_back(tmp);
+
+	for (int i = 0; i < J_2.size(); i++) {
+		vector<int> tmp;
+		tmp.push_back(J_2[i][0]);
+		tmp.push_back(C_time);
+
+		C_time += J_2[i][3];
+		C_schedule3.push_back(tmp);
+	}
+
+	// Algorithm B3 makespan
+	int B3_make = max( max(A_time, B_time), C_time);
+
+	if (ALGB3 == 0) {
+		// output to file
+	    out_file.open("output.txt", ofstream::app);
+
+	    if (out_file.is_open()) {
+	        out_file << "Algorithm B3" << endl;
+	        out_file << B3_make << endl;
+	        for (int i = 0; i < n; i++)
+	        	out_file << A_schedule3[i][0] << " " << A_schedule3[i][1] << endl;
+	        // out_file << "B and C" << endl;
+	        for (int i = 0; i < n; i++)
+	        	out_file << B_schedule3[i][0] << " " << B_schedule3[i][1] << " " << C_schedule3[i][1] << endl;
+	    }
+	    else
+	        cout << "Error opening output file" << endl;
+
+		// closing output files
+	    out_file.close();
+	}
+
+    return 0;
 }
 
 
@@ -583,19 +966,17 @@ int main() {
 
     // cout << "ALGORITHM A" << endl;
     int A_make = a.Algorithm_A();
-    cout << "ALG_A makespan " << A_make << endl;
+    // cout << "ALG_A makespan " << A_make << endl;
 
     // cout << "ALGORITHM B1" << endl;
     int B1_make = a.Algorithm_B1();
-    cout << "ALG_B1 makespan " << B1_make << endl;
+    // cout << "ALG_B1 makespan " << B1_make << endl;
 
-    // cout << "ALGORITHM B2" << endl;
-    int B2_make = a.Algorithm_B2();
-    cout << "ALG_B2 makespan " << B2_make << endl;
+    // cout << "ALGORITHM B2_3" << endl;
+    int B2_make = a.Algorithm_B2_3();
+    // cout << "ALG_B2 makespan " << B2_make << endl;
 
-    // cout << "ALGORITHM B3" << endl;
-    // int B3_make = a.Algorithm_B3();
-    // cout << "ALG_B3 makespan " << B3_make << endl;
+    // print_vec(a.array);
 
     return 0;
 }
