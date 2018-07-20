@@ -25,7 +25,6 @@ int main() {
         // first line contains m and n as inputs
         in_file >> m >> n;
 
-        int line_count = 0;
         int a,b,c;
         while (in_file >> a >> b >> c) {
         	vector<int> row;
@@ -49,21 +48,22 @@ int main() {
 
 	// the first line is Algorithm A
 	getline(out_file, titleA);
-	if (selection == 0)
-		gp << "set title '" << titleA << "'\n";
 	// the second line is makespan or -1
 	out_file >> A_make;
+	if (selection == 0)
+		gp << "set title '" << titleA << ": " << A_make << "'\n";
+
 	if (A_make != -1) {
 		if (selection == 0) {
 			gp << "set term wxt 0 size 1600,700\n";
-			gp << "set xrange [0:" << A_make << "]\nset yrange [0:" << 3+m << "]\n";
+			gp << "set xrange [0:" << A_make << "]\nset yrange [0:" << 2+m << "]\n";
 	    	// the next n lines are the job start times on A machines if second line not -1
 	    	for (int i = 0; i < n; i++) {
 	    		out_file >> job >> machine >> start;
 	    		// draw rectangle
 	    		gp << "set object " << i+1 << " rect from " << start << "," << 1+m-machine << " to " << start+runtimes[job-1][0] << "," << 1+m-machine+0.5 << "\n";
 	    		// draw job number
-	    		gp << "set label '" << job << "' at " << start+runtimes[job-1][0]/2 << "," << 1+m-machine+0.25 << " center\n";
+	    		gp << "set label '" << job << "' at " << start+runtimes[job-1][0]/(float)2 << "," << 1+m-machine+0.25 << " center\n";
 	    	}
 
 	    	// the next n lines are the job start times on machines B and C resepectively if second line not -1
@@ -72,17 +72,20 @@ int main() {
 	    		// draw rectangle for machine B
 	    		gp << "set object " << n+i+1 << " rect from " << start << ",1 to " << start+runtimes[job-1][1] << ",1.5\n";
 	    		// draw job number for job on machine B
-	    		gp << "set label '" << job << "' at " << start+runtimes[job-1][1]/2 << ",1.25 center\n";
+	    		gp << "set label '" << job << "' at " << start+runtimes[job-1][1]/(float)2 << ",1.25 center\n";
 	    		// draw rectangle for machine C
 	    		gp << "set object " << 2*n+i+1 << " rect from " << start2 << ",0 to " << start2+runtimes[job-1][2] << ",0.5\n";
 	    		// draw job number for job on machine C
-	    		gp << "set label '" << job << "' at " << start2+runtimes[job-1][2]/2 << ",0.25 center\n";
+	    		gp << "set label '" << job << "' at " << start2+runtimes[job-1][2]/(float)2 << ",0.25 center\n";
 	    	}
 
 	    	gp << "plot 0\nreplot 1\n";
 			for (int i = 0; i < m; i++) {
 				gp << "replot " << 2+i << "\n";
 			}
+
+			gp << "set terminal pdf size 1600,700\nset output 'AlgorithmA.pdf'\n";
+			gp << "replot\n";
 		}
 		else {
 			// skip 2n lines
@@ -97,10 +100,11 @@ int main() {
 
     // the first line is Algorithm B1
 	getline(out_file, titleB1);
-	if (selection == 1)
-		gp << "set title '" << titleB1 << "'\n";
 	// the second line is makespan or -1
 	out_file >> B1_make;
+	if (selection == 1)
+		gp << "set title '" << titleB1 << ": " << B1_make << "'\n";
+
 	if (B1_make != -1) {
 		if (selection == 1) {
 			gp << "set term wxt 1 size 1600,700\n";
@@ -111,7 +115,7 @@ int main() {
 	    		// draw rectangle
 	    		gp << "set object " << 3*n+i+1 << " rect from " << start << ",2 to " << start+runtimes[job-1][0] << ",2.5\n";
 	    		// draw job number
-	    		gp << "set label '" << job << "' at " << start+runtimes[job-1][0]/2 << ",2.25 center\n";
+	    		gp << "set label '" << job << "' at " << start+runtimes[job-1][0]/(float)2 << ",2.25 center\n";
 	    	}
 
 	    	// the next n lines are the job start times on machines B and C resepectively if second line not -1
@@ -120,14 +124,16 @@ int main() {
 	    		// draw rectangle for machine B
 	    		gp << "set object " << 4*n+i+1 << " rect from " << start << ",1 to " << start+runtimes[job-1][1] << ",1.5\n";
 	    		// draw job number for job on machine B
-	    		gp << "set label '" << job << "' at " << start+runtimes[job-1][1]/2 << ",1.25 center\n";
+	    		gp << "set label '" << job << "' at " << start+runtimes[job-1][1]/(float)2 << ",1.25 center\n";
 	    		// draw rectangle for machine C
 	    		gp << "set object " << 5*n+i+1 << " rect from " << start2 << ",0 to " << start2+runtimes[job-1][2] << ",0.5\n";
 	    		// draw job number for job on machine C
-	    		gp << "set label '" << job << "' at " << start2+runtimes[job-1][2]/2 << ",0.25 center\n";
+	    		gp << "set label '" << job << "' at " << start2+runtimes[job-1][2]/(float)2 << ",0.25 center\n";
 	    	}
 
 	    	gp << "plot 0\nreplot 1\nreplot 2\n";
+	    	gp << "set terminal pdf\nset output 'AlgorithmB1.pdf'\n";
+			gp << "replot\n";
 		}
 		else {
 			// skip 2n lines
@@ -144,10 +150,11 @@ int main() {
 
 	// the first line is Algorithm B2
 	getline(out_file, titleB2);
-	if (selection == 2)
-		gp << "set title '" << titleB2 << "'\n";
 	// the second line is makespan or -1
 	out_file >> B2_make;
+	if (selection == 2)
+		gp << "set title '" << titleB2 << ": " << B2_make << "'\n";
+
 	if (B2_make != -1) {
 		if (selection == 2) {
 			gp << "set term wxt 2 size 1600,700\n";
@@ -158,7 +165,7 @@ int main() {
 	    		// draw rectangle
 	    		gp << "set object " << 6*n+i+1 << " rect from " << start << ",2 to " << start+runtimes[job-1][0] << ",2.5\n";
 	    		// draw job number
-	    		gp << "set label '" << job << "' at " << start+runtimes[job-1][0]/2 << ",2.25 center\n";
+	    		gp << "set label '" << job << "' at " << start+runtimes[job-1][0]/(float)2 << ",2.25 center\n";
 	    	}
 
 	    	// the next n lines are the job start times on machines B and C resepectively if second line not -1
@@ -167,14 +174,16 @@ int main() {
 	    		// draw rectangle for machine B
 	    		gp << "set object " << 7*n+i+1 << " rect from " << start << ",1 to " << start+runtimes[job-1][1] << ",1.5\n";
 	    		// draw job number for job on machine B
-	    		gp << "set label '" << job << "' at " << start+runtimes[job-1][1]/2 << ",1.25 center\n";
+	    		gp << "set label '" << job << "' at " << start+runtimes[job-1][1]/(float)2 << ",1.25 center\n";
 	    		// draw rectangle for machine C
 	    		gp << "set object " << 8*n+i+1 << " rect from " << start2 << ",0 to " << start2+runtimes[job-1][2] << ",0.5\n";
 	    		// draw job number for job on machine C
-	    		gp << "set label '" << job << "' at " << start2+runtimes[job-1][2]/2 << ",0.25 center\n";
+	    		gp << "set label '" << job << "' at " << start2+runtimes[job-1][2]/(float)2 << ",0.25 center\n";
 	    	}
 
 	    	gp << "plot 0\nreplot 1\nreplot 2\n";
+	    	gp << "set terminal pdf\nset output 'AlgorithmB2.pdf'\n";
+			gp << "replot\n";
 		}
 		else {
 			// skip 2n lines
@@ -189,10 +198,11 @@ int main() {
 
 	// the first line is Algorithm B3
 	getline(out_file, titleB3);
-	if (selection == 3)
-		gp << "set title '" << titleB3 << "'\n";
 	// the second line is makespan or -1
 	out_file >> B3_make;
+	if (selection == 3)
+		gp << "set title '" << titleB3 << ": " << B3_make << "'\n";
+
 	if (B3_make != -1) {
 		if (selection == 3) {
 			gp << "set term wxt 3 size 1600,700\n";
@@ -203,7 +213,7 @@ int main() {
 	    		// draw rectangle
 	    		gp << "set object " << 9*n+i+1 << " rect from " << start << ",2 to " << start+runtimes[job-1][0] << ",2.5\n";
 	    		// draw job number
-	    		gp << "set label '" << job << "' at " << start+runtimes[job-1][0]/2 << ",2.25 center\n";
+	    		gp << "set label '" << job << "' at " << start+runtimes[job-1][0]/(float)2 << ",2.25 center\n";
 	    	}
 
 	    	// the next n lines are the job start times on machines B and C resepectively if second line not -1
@@ -212,14 +222,16 @@ int main() {
 	    		// draw rectangle for machine B
 	    		gp << "set object " << 10*n+i+1 << " rect from " << start << ",1 to " << start+runtimes[job-1][1] << ",1.5\n";
 	    		// draw job number for job on machine B
-	    		gp << "set label '" << job << "' at " << start+runtimes[job-1][1]/2 << ",1.25 center\n";
+	    		gp << "set label '" << job << "' at " << start+runtimes[job-1][1]/(float)2 << ",1.25 center\n";
 	    		// draw rectangle for machine C
 	    		gp << "set object " << 11*n+i+1 << " rect from " << start2 << ",0 to " << start2+runtimes[job-1][2] << ",0.5\n";
 	    		// draw job number for job on machine C
-	    		gp << "set label '" << job << "' at " << start2+runtimes[job-1][2]/2 << ",0.25 center\n";
+	    		gp << "set label '" << job << "' at " << start2+runtimes[job-1][2]/(float)2 << ",0.25 center\n";
 	    	}
 
 	    	gp << "plot 0\nreplot 1\nreplot 2\n";
+	    	gp << "set terminal pdf\nset output 'AlgorithmB3.pdf'\n";
+			gp << "replot\n";
 		}
 		else {
 			// skip 2n lines
